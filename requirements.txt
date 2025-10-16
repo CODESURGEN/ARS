@@ -1,0 +1,6 @@
+python-dotenv
+sshtunnel
+pymssql
+paramiko<4
+streamlit
+pandas
