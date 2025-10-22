@@ -48,21 +48,24 @@ def get_order_details():
         if col in df.columns:
             df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0)
 
-    factor = pd.to_numeric(df.get("conversion_rate", 1), errors='coerce').fillna(1)
-
+    
+    
     currency_cols = [
-        "gross_amount", "Subtotal Purchased", "Tax", "Shipping",
-        "Discount", "Vendor Amount", "Vendor Subtotal", "Vendor Shipping"
+        "Total Purchased","Subtotal Purchased", "Tax", "Shipping",
+        "Discount", "Vendor Amount", "Vendor Subtotal", "Vendor Shipping","settlement_amount"
     ]
+    
+    rate = pd.to_numeric(df["conversion_rate"], errors='coerce').fillna(1) if "conversion_rate" in df.columns else 1
     for col in currency_cols:
-        if col in df.columns:
-            df[col] = df[col] * factor
+        if col in df.columns:       
+            df[col] = df[col] * rate
+
     if {"currency_code", "psp_fees", "gross_amount"}.issubset(df.columns):
         mask = (df["currency_code"] == "Refunded") & (df["psp_fees"] == 0)
         df.loc[mask, "psp_fees"] = -(0.035 * df["Total Purchased"])
 
     if "gross_amount" in df.columns and "Vendor Amount" in df.columns and "psp_fees" in df.columns:
-        df["margin_profit"] = df["Total Purchased"] - df["Vendor Amount"] - df["psp_fees"]
+        df["margin_profit"] = df["settlement_amount"] - df["Vendor Subtotal"] - df["Vendor Shipping"] - df["psp_fees"]
 
     if 'Purchased on' in df.columns:
         df['Purchased on'] = pd.to_datetime(df['Purchased on'])
