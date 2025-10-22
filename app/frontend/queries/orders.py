@@ -20,7 +20,6 @@ SELECT
         WHEN 7 THEN 'DLWholesale'
         ELSE 'Unknown'
     END as 'Vendor Name',
-    c.TotalAmount - v.TotalAmount as 'Profit Amount',
     c.PaymentMethod as 'Payment Method',
     c.PaymentTransId as 'Payment Transaction ID'
 FROM
@@ -30,7 +29,7 @@ INNER JOIN
 ON
     c.CustOrderNumber = v.PONumber
 WHERE
-    c.OrderedDate >= '2025-08-01' AND
+    c.OrderedDate >= '2025-07-01'
 ORDER BY
     c.OrderedDate DESC;
 """

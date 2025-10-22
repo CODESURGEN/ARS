@@ -1,30 +1,38 @@
 import streamlit as st
 import pandas as pd
-from app.backend.db_connection import create_connection, close_connection, list_tables
+import sys
+import os
 from dotenv import load_dotenv
-from app.frontend.queries.orders import DEFAULT_QUERY
 
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
+from app.frontend.dashboard.kpis import display_kpis
+from app.frontend.dashboard.time_series import display_time_series_charts
+from app.frontend.dashboard.categorical_breakdowns import display_categorical_charts
+from app.frontend.dashboard.interactive_filters import display_filters, display_tables
+from app.frontend.dashboard.order_details import get_order_details
 load_dotenv()
 
 def run():
-    st.set_page_config(page_title="Orders Details Dashboard", layout="wide")
-    st.title("Orders Details Dashboard")
-    conn = None
+    st.set_page_config(page_title="Executive Commerce Overview", layout="wide", page_icon="📊")
+    st.title("Executive Overview")
+    
     try:
-        conn = create_connection()
-        rows, columns = list_tables(conn, DEFAULT_QUERY)
-        if rows:
-            df = pd.DataFrame(rows, columns=columns if columns else None)
+        df = get_order_details()
+        df.to_csv("app/data/order_details_with_psp.csv", index=False)
+
+        if not df.empty:
+            filtered_df = display_filters(df)
+            display_kpis(filtered_df)
+            display_time_series_charts(filtered_df)
+            display_categorical_charts(filtered_df)
+            display_tables(filtered_df)
         else:
-            df = pd.DataFrame(columns=columns if columns else None)
-        st.write(f"Rows: {len(rows)}")
-        st.dataframe(df, use_container_width=True)
+            st.write("No data to display.")
         
     except Exception as e:
         st.error(str(e))
-    finally:
-        close_connection(conn)
-
 
 if __name__ == "__main__":
     run()
