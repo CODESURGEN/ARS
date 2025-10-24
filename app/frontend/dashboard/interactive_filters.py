@@ -35,8 +35,5 @@ def display_filters(df):
     return filtered_df
 
 def display_tables(df):
-    st.subheader("Refunds Table")
-    refunds_df = df[df['currency_code'] == 'Refunded']
-    st.dataframe(refunds_df)
     st.subheader("Full Data Table")
     st.dataframe(df)

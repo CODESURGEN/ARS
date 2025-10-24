@@ -12,6 +12,7 @@ from app.frontend.dashboard.time_series import display_time_series_charts
 from app.frontend.dashboard.categorical_breakdowns import display_categorical_charts
 from app.frontend.dashboard.interactive_filters import display_filters, display_tables
 from app.frontend.dashboard.order_details import get_order_details
+from app.frontend.dashboard.refunds import display_refund_dashboard
 load_dotenv()
 
 def run():
@@ -28,6 +29,8 @@ def run():
             display_time_series_charts(filtered_df)
             display_categorical_charts(filtered_df)
             display_tables(filtered_df)
+            display_refund_dashboard(filtered_df)
+            
         else:
             st.write("No data to display.")
         
