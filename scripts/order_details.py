@@ -1,6 +1,6 @@
+from locale import D_FMT
 import pandas as pd
-from app.backend.db_connection import create_connection, close_connection, list_tables
-from app.frontend.queries.orders import DEFAULT_QUERY
+
 
 def get_order_details():
     order_details_df = pd.read_csv("app/data/order_details.csv")
@@ -11,13 +11,13 @@ def get_order_details():
         psp_df,
         left_on='Order Number',
         right_on='order_number',
-        how='left',
+        how='right',
         suffixes=("", "_psp")
     )
 
     prefer_cols = [
         "gross_amount",
-        "psp_fees",
+        "Tax",
         "settlement_amount",
         "currency_code",
         "conversion_rate",
@@ -35,7 +35,7 @@ def get_order_details():
     drop_cols = [
         "Payment Transaction ID",
         "transaction_id",
-        "payment_method",
+        # "payment_method",
         "order_number",
     ] + [f"{c}_psp" for c in prefer_cols if f"{c}_psp" in df.columns]
     df = df.drop(columns=[c for c in drop_cols if c in df.columns], errors='ignore')
@@ -52,7 +52,7 @@ def get_order_details():
     
     currency_cols = [
         "Total Purchased","Subtotal Purchased", "Tax", "Shipping",
-        "Discount", "Vendor Amount", "Vendor Subtotal", "Vendor Shipping","settlement_amount"
+        "Discount"
     ]
     
     rate = pd.to_numeric(df["conversion_rate"], errors='coerce').fillna(1) if "conversion_rate" in df.columns else 1
@@ -70,7 +70,12 @@ def get_order_details():
     if 'Purchased on' in df.columns:
         df['Purchased on'] = pd.to_datetime(df['Purchased on'])
     
-    
-
     return df
 
+if __name__ == "__main__":
+    df = get_order_details()
+    df["value_check"] = df["Total Purchased"] - df["gross_amount"]
+    cols = ["Order Number", "Total Purchased", "gross_amount","currency_code","value_check",'payment_method']
+    cols = [c for c in cols if c in df.columns]
+    mismatched = df.loc[df["value_check"] > 0.1, cols]
+    mismatched.to_csv("app/data/mismatched_orders.csv", index=False, columns=cols)
