@@ -22,6 +22,7 @@ SELECT
     END as 'Vendor Name',
     c.PaymentMethod as 'Payment Method',
     c.PaymentTransId as 'Payment Transaction ID'
+    c.Return
 FROM
     CustOrderDetails AS c
 INNER JOIN
